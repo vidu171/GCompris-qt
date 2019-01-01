@@ -19,7 +19,7 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *   along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 .pragma library
 .import QtQuick 2.6 as Quick
@@ -39,10 +39,10 @@ var instructions = [{
         "text": qsTr("This is the bass clef staff for low pitched notes.")
     },
     {
-        "text": qsTr("The black keys are sharp and flat keys, have a # sign.")
+        "text": qsTr("The black keys are sharp and flat keys, have a ♯ sign.")
     },
     {
-        "text": qsTr("Each black key has two names: flat and sharp. Flat notes have b sign.")
+        "text": qsTr("Each black key has two names: flat and sharp. Flat notes have ♭ sign.")
     },
     {
         "text": qsTr("Click on the note symbol to write different length notes such as whole notes, half notes, quarter notes and eighth notes.")

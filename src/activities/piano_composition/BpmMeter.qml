@@ -19,7 +19,7 @@
 *   GNU General Public License for more details.
 *
 *   You should have received a copy of the GNU General Public License
-*   along with this program; if not, see <http://www.gnu.org/licenses/>.
+*   along with this program; if not, see <https://www.gnu.org/licenses/>.
 */
 import QtQuick 2.6
 import GCompris 1.0
@@ -44,9 +44,10 @@ Item {
     }
     GCText {
         //: BPM is the abbreviation for Beats Per Minute.
-        text: qsTr("%1 BPM").arg(multipleStaff.bpmValue)
+        text: qsTr("%1 BPM").arg(multipleStaff.bpmValue + "<br>")
         width: 0.9 * bpmBg.width
-        height: bpmBg.height
+        height: 0.9 * bpmBg.height
+        horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         anchors.centerIn: bpmBg
         fontSizeMode: Text.Fit
@@ -86,6 +87,7 @@ Item {
             onReleased: {
                 decreaseBpm.stop()
                 bpmDown.scale = 1
+                bpmChanged()
             }
         }
         states: [
@@ -152,6 +154,7 @@ Item {
             onReleased: {
                 increaseBpm.stop()
                 bpmUp.scale = 1
+                bpmChanged()
             }
         }
         states: [

@@ -17,7 +17,7 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *   along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 import QtQuick 2.6
 import GCompris 1.0
@@ -33,29 +33,15 @@ ActivityBase {
     onStop: {}
     isMusicalActivity: true
 
-    property bool horizontalLayout: width > height
+    property bool horizontalLayout: width >= height
 
-    pageComponent: Image {
+    pageComponent: Rectangle {
         id: background
         anchors.fill: parent
-        fillMode: Image.PreserveAspectCrop
+        color: "#ABCDEF"
 
         signal start
         signal stop
-
-        property string backgroundImagesUrl: ":/gcompris/src/activities/piano_composition/resource/background/"
-        property var backgroundImages: directory.getFiles(backgroundImagesUrl)
-
-        Directory {
-            id: directory
-        }
-
-        source: {
-            if(items.bar.level === 0)
-                return "qrc" + backgroundImagesUrl + backgroundImages[0]
-            else
-                return "qrc" + backgroundImagesUrl + backgroundImages[(items.bar.level - 1) % backgroundImages.length]
-        }
 
         Component.onCompleted: {
             activity.start.connect(start)
@@ -85,8 +71,11 @@ ActivityBase {
 
         property string clefType: "Treble"
         property bool isRhythmPlaying: false
+        property int metronomeSpeed: 60000 / multipleStaff.bpmValue - 53
+        property real weightOffset: metronome.height * multipleStaff.bpmValue * 0.004
 
-        Keys.onSpacePressed: tempo.tempoPressed()
+        Keys.onSpacePressed: if (!background.isRhythmPlaying && !bonus.isPlaying)
+                                tempo.tempoPressed()
 
         Rectangle {
             id: instructionBox
@@ -164,6 +153,7 @@ ActivityBase {
             id: multipleStaff
             width: horizontalLayout ? parent.width * 0.6 : parent.width * 0.9
             height: horizontalLayout ? parent.height * 1.1 : parent.height * 0.76
+            bpmValue: 90
             nbStaves: 1
             clef: clefType
             isFlickable: false
@@ -177,32 +167,42 @@ ActivityBase {
             onPulseMarkerAnimationFinished: background.isRhythmPlaying = false
             onPlayDrumSound: {
                 if(background.isRhythmPlaying && !metronomeOscillation.running)
-                    items.audioEffects.play("qrc:/gcompris/src/activities/play_rhythm/resource/click.wav")
+                    GSynth.generate(60, 100)
             }
         }
 
         Image {
             id: tempo
-            source: "qrc:/gcompris/src/activities/play_rhythm/resource/drumhead.png"
+            source: "qrc:/gcompris/src/activities/play_rhythm/resource/drumhead.svg"
             width: horizontalLayout ? parent.width / 7 : parent.width / 4
-            height: width / 2
+            sourceSize.width: width
+            fillMode: Image.PreserveAspectFit
             anchors.top: metronome.top
             anchors.horizontalCenter: parent.horizontalCenter
+            transform: Scale {
+                id: tempoScale
+                origin.y: tempo.height
+                yScale: 1
+                SequentialAnimation on yScale {
+                    id: tempoAnim
+                    PropertyAnimation { to: 0.5; duration: 50 }
+                    PropertyAnimation { to: 1; duration: 50 }
+                }
+            }
             MouseArea {
                 anchors.fill: parent
-                enabled: !background.isRhythmPlaying && !bonus.isPlaying && (!items.isWrongRhythm || multipleStaff.isPulseMarkerRunning)
+                enabled: !background.isRhythmPlaying && !bonus.isPlaying
                 onPressed: tempo.tempoPressed()
-                onReleased: tempo.scale = 1
             }
 
             function tempoPressed() {
-                tempo.scale = 0.85
-                if(!multipleStaff.isMusicPlaying) {
-                    Activity.currentNote = 0
+                tempoAnim.start()
+                if(!multipleStaff.isMusicPlaying && Activity.currentNote == 0) {
                     multipleStaff.play()
+                } else if (!multipleStaff.isMusicPlaying && Activity.currentNote > 0){
+                    items.bonus.bad("flower")
                 }
-                if(!metronomeOscillation.running)
-                    items.audioEffects.play("qrc:/gcompris/src/activities/play_rhythm/resource/click.wav")
+                GSynth.generate(60, 100)
                 Activity.checkAnswer(multipleStaff.pulseMarkerX)
             }
         }
@@ -239,30 +239,17 @@ ActivityBase {
                 SequentialAnimation {
                     id: metronomeOscillation
                     loops: Animation.Infinite
+                    onStarted: metronomeNeedle.rotation = 12
                     onStopped: metronomeNeedle.rotation = 0
-                    RotationAnimator {
-                        target: metronomeNeedle
-                        from: 0
-                        to: 12
-                        direction: RotationAnimator.Shortest
-                        duration: 463
-                    }
                     ScriptAction {
                         script: items.audioEffects.play("qrc:/gcompris/src/activities/play_rhythm/resource/click.wav")
                     }
                     RotationAnimator {
                         target: metronomeNeedle
                         from: 12
-                        to: 0
-                        direction: RotationAnimator.Shortest
-                        duration: 463
-                    }
-                    RotationAnimator {
-                        target: metronomeNeedle
-                        from: 0
                         to: 348
                         direction: RotationAnimator.Shortest
-                        duration: 463
+                        duration: metronomeSpeed
                     }
                     ScriptAction {
                         script: items.audioEffects.play("qrc:/gcompris/src/activities/play_rhythm/resource/click.wav")
@@ -270,11 +257,50 @@ ActivityBase {
                     RotationAnimator {
                         target: metronomeNeedle
                         from: 348
-                        to: 0
+                        to: 12
                         direction: RotationAnimator.Shortest
-                        duration: 463
+                        duration: metronomeSpeed
                     }
                 }
+                Image {
+                    id: metronomeWeight
+                    source: "qrc:/gcompris/src/activities/play_rhythm/resource/metronome_weight.svg"
+                    fillMode: Image.PreserveAspectFit
+                    width: parent.height
+                    height: parent.height
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.verticalCenterOffset: weightOffset
+                }
+                
+            }
+            Image {
+                id: metronomeFront
+                source: "qrc:/gcompris/src/activities/play_rhythm/resource/metronome_front.svg"
+                fillMode: Image.PreserveAspectFit
+                width: parent.height
+                height: parent.height
+                anchors.centerIn: parent
+            }
+        }
+        
+        OptionsRow {
+            id: optionsRow
+            anchors.verticalCenter: tempo.verticalCenter
+            anchors.left: tempo.right
+
+            bpmVisible: true
+            onBpmDecreased: {
+                if(multipleStaff.bpmValue >= 51)
+                    multipleStaff.bpmValue--
+            }
+            onBpmIncreased: {
+                if(multipleStaff.bpmValue <= 179)
+                multipleStaff.bpmValue++
+            }
+            onBpmChanged: {
+                Activity.initSubLevel()
+                background.isRhythmPlaying = true
             }
         }
 
@@ -293,14 +319,16 @@ ActivityBase {
             onNextLevelClicked: Activity.nextLevel()
             onHomeClicked: activity.home()
             onReloadClicked: {
-                background.isRhythmPlaying = true
                 Activity.initSubLevel()
             }
         }
 
         Bonus {
             id: bonus
-            Component.onCompleted: win.connect(Activity.nextSubLevel)
+            Component.onCompleted: {
+                win.connect(Activity.nextSubLevel)
+                loose.connect(Activity.initSubLevel)
+            }
         }
     }
 }

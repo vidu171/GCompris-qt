@@ -16,7 +16,7 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *   along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 .pragma library
 .import QtQuick 2.6 as Quick
@@ -120,6 +120,7 @@ function startGame() {
 
 function displayNote(currentNote) {
     items.multipleStaff.addMusicElement("note", currentNote, "Quarter", false, false, items.background.clefType)
+    items.multipleStaff.playNoteAudio(currentNote, "Quarter", items.background.clefType, 500)
     if(!items.isTutorialMode) {
         items.addNoteTimer.interval = items.addNoteTimer.timerNormalInterval
         items.addNoteTimer.start()

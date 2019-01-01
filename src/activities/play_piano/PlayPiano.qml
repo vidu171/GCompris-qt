@@ -17,12 +17,11 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 import QtQuick 2.6
 import QtQuick.Controls 1.5
 import GCompris 1.0
-import QtMultimedia 5.0
 
 import "../../core"
 import "../piano_composition"
@@ -35,7 +34,7 @@ ActivityBase {
     onStop: {}
     isMusicalActivity: true
 
-    property bool horizontalLayout: width > height * 1.2
+    property bool horizontalLayout: width >= height * 1.2
 
     pageComponent: Rectangle {
         id: background
@@ -43,10 +42,6 @@ ActivityBase {
         color: "#ABCDEF"
         signal start
         signal stop
-
-        Directory {
-            id: directory
-        }
 
         Component.onCompleted: {
             activity.start.connect(start)

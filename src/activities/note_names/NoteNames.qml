@@ -16,7 +16,7 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *   along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 import QtQuick 2.6
 import QtQuick.Controls 1.5
@@ -32,7 +32,7 @@ ActivityBase {
     onStart: focus = true
     onStop: {}
 
-    property bool horizontalLayout: width > height
+    property bool horizontalLayout: width >= height
 
     pageComponent: Rectangle {
         id: background
@@ -138,9 +138,24 @@ ActivityBase {
             radius: 10
             z: 11
             visible: false
-            onVisibleChanged: text = Activity.targetNotes[0] == undefined ? ""
-                                                                       : items.isTutorialMode ? qsTr("New note: %1").arg(Activity.targetNotes[0])
-                                                                       : Activity.newNotesSequence[Activity.currentNoteIndex]
+
+            function getTranslatedNoteName(noteName) {
+                for(var i = 0; i < doubleOctave.keyNames.length; i++) {
+                    if(doubleOctave.keyNames[i][0] == noteName)
+                        return doubleOctave.keyNames[i][1]
+                }
+                return ""
+            }
+
+            onVisibleChanged: {
+                if(Activity.targetNotes[0] == undefined)
+                    text = ""
+                else if(items.isTutorialMode)
+                    text = qsTr("New note: %1").arg(getTranslatedNoteName(Activity.targetNotes[0]))
+                else
+                    text = getTranslatedNoteName(Activity.newNotesSequence[Activity.currentNoteIndex])
+            }
+
             property string text
 
             GCText {
@@ -268,6 +283,7 @@ ActivityBase {
             readonly property int maxNbOctaves: 3
             property int currentOctaveNb: 0
             property var coloredKeyLabels: []
+            property var keyNames: []
 
             Repeater {
                 id: octaveRepeater
@@ -321,6 +337,8 @@ ActivityBase {
                             ]
                         }
                     }
+
+                    Component.onCompleted: doubleOctave.keyNames = whiteKeyNoteLabelsArray
                 }
             }
         }

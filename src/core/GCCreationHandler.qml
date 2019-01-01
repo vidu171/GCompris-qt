@@ -16,7 +16,7 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *   along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 import QtQuick 2.6
@@ -30,8 +30,8 @@ Rectangle {
 
     width: parent.width
     height: parent.height
-    color: "yellow"
-    border.color: "black"
+    color: "#ABCDEF"
+    border.color: "white"
     border.width: 2
     radius: 20
     visible: false
@@ -131,12 +131,12 @@ Rectangle {
         if(file.rmpath(filePath)) {
             Core.showMessageDialog(creationHandler,
                                    qsTr("%1 deleted successfully!").arg(filePath),
-                                   "", null, "", null, null);
+                                   qsTr("Ok"), null, "", null, null);
         }
         else {
             Core.showMessageDialog(creationHandler,
                                    qsTr("Unable to delete %1!").arg(filePath),
-                                   "", null, "", null, null);
+                                   qsTr("Ok"), null, "", null, null);
         }
 
         viewContainer.selectedFileIndex = -1
@@ -169,7 +169,7 @@ Rectangle {
         file.write(JSON.stringify(creationHandler.dataToSave), fileSavePath)
         Core.showMessageDialog(creationHandler,
                                qsTr("Saved successfully!"),
-                               "", null, "", null, null);
+                               qsTr("Ok"), null, "", null, null);
         refreshWindow()
     }
 
@@ -275,7 +275,7 @@ Rectangle {
                 Rectangle {
                     anchors.fill: parent
                     visible: index === viewContainer.selectedFileIndex
-                    color: "red"
+                    color: "#E77936"
                     opacity: 0.4
                     radius: 10
                 }
